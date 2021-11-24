@@ -44,8 +44,6 @@ public class Projectile
 		
 		life -= Gdx.graphics.getDeltaTime();
 		
-		System.out.println(life);
-		
 		if (life < 0)
 		{
 			parent.despawn(this);
@@ -53,7 +51,7 @@ public class Projectile
 		
 		sprite.setOriginBasedPosition(position.x, position.y);
 		
-		if (Vector2.dst(position.x, position.y, parent.parent.position.x, parent.parent.position.y) < 2000)
+		if (Vector2.dst(position.x, position.y, parent.parent.position.x, parent.parent.position.y) < 2048)
 		{
 			sprite.draw(batch);
 		}

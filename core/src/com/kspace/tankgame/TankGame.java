@@ -34,7 +34,7 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		batch = new SpriteBatch();
 		map = new Minimap(background, player);
 		
-		background.renderRadius = 1;
+		background.renderRadius = 2;
 		
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
 		
