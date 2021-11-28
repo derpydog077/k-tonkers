@@ -1,20 +1,13 @@
 package com.kspace.tankgame;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
 
 public class Weapon
 {
-	public Sprite sprite; //Texture Sprite
 	public Player parent; //Parent Player
 	public float offset = 0; //Distance from Turret Center
 	public float direction = 0; //Rotation Offset in Degrees
@@ -55,16 +48,6 @@ public class Weapon
 		{
 			active.get(i).update();
 		}
-	}
-	
-	public void draw(SpriteBatch batch)
-	{
-		/*for (int i = 0; i < active.size; i++)
-		{
-			active.get(i).draw(batch);
-		}*/
-		
-		//sprite.draw(batch);
 	}
 	
 	public void fire()
