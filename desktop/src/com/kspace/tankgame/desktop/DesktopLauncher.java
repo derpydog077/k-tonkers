@@ -16,7 +16,8 @@ public class DesktopLauncher
 		config.height = 648;
 		config.resizable = false;
 		config.samples = 8;
-		config.foregroundFPS = 60;
+		config.backgroundFPS = -1;
+		config.foregroundFPS = -1;
 		config.vSyncEnabled = false;
 		config.addIcon("data/ui/icon.png", Files.FileType.Internal);
 		new LwjglApplication(new TankGame(), config);

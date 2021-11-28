@@ -1,11 +1,16 @@
 package com.kspace.tankgame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
 
 public class Weapon
 {
@@ -15,22 +20,24 @@ public class Weapon
 	public float direction = 0; //Rotation Offset in Degrees
 	public float rotation = 0;
 	public float length = 0;
-	public float reload = 0.2f;
+	public float reload = 0f;
 	public float timer = 0;
+	public float muzzle = 0;
+	public Model proj;
 	public Vector2 position = new Vector2();
+	public ModelInstance instance;
 	public Array<Projectile> active = new Array<Projectile>();
 
-	Weapon(Player parent)
+	Weapon(Player parent, Model mdl, Model prj)
 	{
 		this.parent = parent;
-		Texture texture = new Texture("data/weapons/cannon/wpn_s0.png");
-		sprite = new Sprite(texture);
-		sprite.setOriginCenter();
-		sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight());
-		this.length = sprite.getHeight();
+		
+		proj = prj;
+		
+		instance = new ModelInstance(mdl);
 	}
 
-	public void draw(SpriteBatch batch)
+	public void update()
 	{
 		float xOffset = (float) Math.cos(Math.toRadians(parent.rotation + direction + 90)) * -offset;
 		float yOffset = (float) Math.sin(Math.toRadians(parent.rotation + direction + 90)) * -offset;
@@ -41,22 +48,30 @@ public class Weapon
 		if (timer > 0) timer -= Gdx.graphics.getDeltaTime();
 		else if (timer < 0) timer = 0;
 		
-		sprite.setOriginBasedPosition(parent.position.x + xOffset, parent.position.y + yOffset);
-		sprite.setRotation(parent.rotation + direction + rotation);
+		instance.transform.setToRotation(0, 0, 1, parent.rotation + direction + rotation);
+		instance.transform.setTranslation(position.x, position.y, 1);
 		
 		for (int i = 0; i < active.size; i++)
 		{
-			active.get(i).draw(batch);
+			active.get(i).update();
 		}
+	}
+	
+	public void draw(SpriteBatch batch)
+	{
+		/*for (int i = 0; i < active.size; i++)
+		{
+			active.get(i).draw(batch);
+		}*/
 		
-		sprite.draw(batch);
+		//sprite.draw(batch);
 	}
 	
 	public void fire()
 	{
 		if (timer == 0)
 		{
-			Projectile p = new Projectile(this, parent.rotation + direction + rotation, 256);
+			Projectile p = new Projectile(this, proj, parent.rotation + direction + rotation, muzzle);
 			active.add(p);
 			timer = reload;
 		}
@@ -71,6 +86,10 @@ public class Weapon
 	
 	public void dispose()
 	{
-
+		instance.model.dispose();
+		for (int i = 0; i < active.size; i++)
+		{
+			active.get(i).dispose();
+		}
 	}
 }

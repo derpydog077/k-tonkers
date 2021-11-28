@@ -4,9 +4,11 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -19,19 +21,29 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 	private Minimap map;
 	private OrthographicCamera camera;
 	private Player player;
+	private ConfigLoader cfgl;
 	private Background background;
+	private AssetManager assets;
 	
 	private float[] zoomLimits = {0.5f, 3f};
 	
 	@Override
 	public void create()
 	{
-		player = new Player();
+		assets = new AssetManager();
+		assets.load("data/player/tank.g3db", Model.class);
+		assets.load("data/player/turret.g3db", Model.class);
+		assets.load("data/weapons/cannon/mdl_s0.g3db", Model.class);
+		assets.load("data/weapons/cannon/prj_s0.g3db", Model.class);
+		assets.finishLoading();
+		
+		player = new Player(assets);
 		modelBatch = new ModelBatch();
 		environment = new Environment();
 		background = new Background(8, 8);
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		batch = new SpriteBatch();
+		cfgl = new ConfigLoader();
 		map = new Minimap(background, player);
 		
 		background.renderRadius = 2;
@@ -42,9 +54,12 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		
 		camera.zoom = 1f;
 		camera.near = 0.1f;
-		camera.far = 300f;
+		camera.far = 100f;
 		
 		Gdx.input.setInputProcessor(this);
+		
+		cfgl.parse(Gdx.files.internal("data/weapons/cannon/cannon.json"));
+		System.out.println(ConfigLoader.find("reload", cfgl.retrieve("size_0")));
 	}
 
 	@Override
@@ -77,7 +92,6 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		
 		batch.begin();
 		background.draw(batch, camera);
-		player.draw(batch);
 		map.draw(batch);
 		batch.end();
 		
@@ -97,7 +111,6 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		map.dispose();
 		background.dispose();
 	}
-	
 	
 	@Override
 	public boolean keyDown(int keycode) {return false;}
