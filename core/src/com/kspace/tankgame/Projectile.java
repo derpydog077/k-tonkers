@@ -26,7 +26,8 @@ public class Projectile
 		
 		instance = new ModelInstance(mdl);
 		instance.transform.setToRotation(0, 0, 1, direction);
-		instance.transform.setTranslation(parent.position.x + xOffset, parent.position.y + yOffset, 0);
+		//instance.transform.scale(0.7f, 0.7f, 0.7f);
+		instance.transform.setTranslation(parent.position.x + xOffset, parent.position.y + yOffset, 0f);
 		instance.materials.get(0).set(ColorAttribute.createDiffuse(parent.parent.color));
 		
 		position = new Vector2(parent.position.x + xOffset, parent.position.y + yOffset);
@@ -53,6 +54,6 @@ public class Projectile
 	
 	public void dispose()
 	{
-		instance.model.dispose();
+		//instance.model.dispose();
 	}
 }

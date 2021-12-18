@@ -54,7 +54,7 @@ public class Weapon
 	{
 		if (timer == 0)
 		{
-			Projectile p = new Projectile(this, proj, parent.rotation + direction + rotation, muzzle);
+			Projectile p = new ProjectileKinetic(this, proj, parent.rotation + direction + rotation, muzzle);
 			active.add(p);
 			timer = reload;
 		}
@@ -69,7 +69,8 @@ public class Weapon
 	
 	public void dispose()
 	{
-		instance.model.dispose();
+		//instance.model.dispose();
+		
 		for (int i = 0; i < active.size; i++)
 		{
 			active.get(i).dispose();

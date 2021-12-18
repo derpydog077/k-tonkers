@@ -21,7 +21,6 @@ public class Player
 	public float rotation;
 	public float direction = 0;
 	public Array<Array<Weapon>> weapons = new Array<Array<Weapon>>();
-	public Projectile p;
 	public float velocity = 0;
 	public Array<ModelInstance> renderQueue = new Array<ModelInstance>();
 	public Array<ModelInstance> modelInstances = new Array<ModelInstance>();
@@ -40,7 +39,6 @@ public class Player
 		
 		ModelInstance turret_i = new ModelInstance(turret);
 		turret_i.materials.get(0).set(ColorAttribute.createDiffuse(color));
-		//turret_i.transform.scale(10,10,10);
 		turret_i.transform.rotate(1, 0, 0, 90);
 		modelInstances.add(turret_i);
 		
@@ -53,6 +51,7 @@ public class Player
 		w1.rotation = -w1.direction;
 		w1.muzzle = 256;
 		w1.reload = 0.2f;
+		w1.length = 64;
 		firegroupLeft.add(w1);
 		
 		Weapon w2 = new Weapon(this, cannon, proj);
@@ -61,14 +60,11 @@ public class Player
 		w2.rotation = -w2.direction;
 		w2.muzzle = 256;
 		w2.reload = 0.2f;
+		w2.length = 64;
 		firegroupRight.add(w2);
 		
 		weapons.add(firegroupLeft);
 		weapons.add(firegroupRight);
-		
-		//tank.dispose();
-		//cannon.dispose();
-		//turret.dispose();
 	}
 
 	public void render(ModelBatch batch, Environment environment)

@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -14,17 +13,18 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 
 public class Minimap
 {
-	public Viewport viewport;
 	public Sprite bg;
 	public Sprite ico;
 	public Player player;
 	public Background grid;
 	public BitmapFont font;
+	public Viewport viewport;
 	
 	private int borderThickness = 3;
 	
-	Minimap(Background grid, Player player)
+	Minimap(Viewport viewport, Background grid, Player player)
 	{
+		this.viewport = viewport;
 		this.grid = grid;
 		this.player = player;
 		
@@ -37,8 +37,7 @@ public class Minimap
 		parameter.spaceX = -2;
 		font = generator.generateFont(parameter);
 		generator.dispose();
-		
-		viewport = new ScreenViewport();
+
 		
 		Pixmap bgpm = new Pixmap(Gdx.graphics.getHeight() / 5 + borderThickness, Gdx.graphics.getHeight() / 5 + borderThickness, Pixmap.Format.RGBA8888);
 		bgpm.setColor(Color.BLACK);
@@ -48,7 +47,7 @@ public class Minimap
 		
 		Texture background = new Texture(bgpm);
 		Texture icon = new Texture("data/ui/minimap.png");
-		
+
 		bg = new Sprite(background);
 		bg.setColor(Color.DARK_GRAY);
 		bg.setPosition(Gdx.graphics.getWidth() / -2, Gdx.graphics.getHeight() / 2 - bg.getHeight());

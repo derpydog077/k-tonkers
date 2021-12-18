@@ -1,0 +1,20 @@
+
+{
+    "texture": "data/ui/ui.png",
+    "editorButton":
+    {
+        "x": 128,
+        "y": 0,
+        "width": 128,
+        "height": 128,
+        "scale": 0.5
+    },
+    "settingsButton":
+    {
+        "x": 128,
+        "y": 0,
+        "width": 128,
+        "height": 128,
+        "scale": 0.5
+    }
+}

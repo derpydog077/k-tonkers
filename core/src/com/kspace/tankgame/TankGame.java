@@ -11,10 +11,15 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.Array;
 
 public class TankGame extends ApplicationAdapter implements InputProcessor
 {
+	private Array<Entity> entities = new Array<Entity>();
+	
 	private SpriteBatch batch;
 	private Environment environment;
 	private ModelBatch modelBatch;
@@ -24,27 +29,40 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 	private ConfigLoader cfgl;
 	private Background background;
 	private AssetManager assets;
+	private UIRenderer ui;
+	private Viewport uiViewport;
+	
+	public boolean loading;
 	
 	private float[] zoomLimits = {0.5f, 3f};
 	
 	@Override
 	public void create()
 	{
+		loading = true;
+		
+		cfgl = new ConfigLoader();
+		loadConfigs();
+		
+		uiViewport = new ScreenViewport();
+		
 		assets = new AssetManager();
 		assets.load("data/player/tank.g3db", Model.class);
 		assets.load("data/player/turret.g3db", Model.class);
 		assets.load("data/weapons/cannon/mdl_s0.g3db", Model.class);
 		assets.load("data/weapons/cannon/prj_s0.g3db", Model.class);
+		assets.load("data/player/npc/test_enemy.g3dj", Model.class);
 		assets.finishLoading();
 		
-		player = new Player(assets);
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		modelBatch = new ModelBatch();
 		environment = new Environment();
-		background = new Background(8, 8);
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		batch = new SpriteBatch();
-		cfgl = new ConfigLoader();
-		map = new Minimap(background, player);
+		
+		ui = new UIRenderer(uiViewport, cfgl.get("KEY_REGIONS_UI"));
+		player = new Player(assets);
+		background = new Background(8, 8);
+		map = new Minimap(uiViewport, background, player);
 		
 		background.renderRadius = 2;
 		
@@ -55,11 +73,10 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		camera.zoom = 1f;
 		camera.near = 0.1f;
 		camera.far = 100f;
-		
+				
 		Gdx.input.setInputProcessor(this);
 		
-		cfgl.parse(Gdx.files.internal("data/weapons/cannon/cannon.json"));
-		System.out.println(ConfigLoader.find("reload", cfgl.retrieve("size_0")));
+		entities.add(new Entity(assets));
 	}
 
 	@Override
@@ -74,6 +91,11 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		camera.position.set(player.position, 5f);
 		camera.update();
 		
+		if (loading)
+		{
+			if (ui.gameUI()) loading = false;
+		}
+		
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) dpos += 128;
 		if (Gdx.input.isKeyPressed(Input.Keys.S)) dpos -= 128;
 		
@@ -87,29 +109,43 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		player.direction += drot * Gdx.graphics.getDeltaTime();
 		
 		player.rotation = (float) Math.toDegrees(Math.atan2(Gdx.input.getX() - Gdx.graphics.getWidth() / 2, Gdx.input.getY() - Gdx.graphics.getHeight() / 2));
-		
+
 		batch.setProjectionMatrix(camera.combined);
 		
 		batch.begin();
 		background.draw(batch, camera);
-		map.draw(batch);
 		batch.end();
 		
 		modelBatch.begin(camera);
 		player.render(modelBatch, environment);
+		for (Entity entity : entities)
+		{
+			entity.render(modelBatch, environment);
+		}
 		modelBatch.end();
 		
-		//batch.end();
+		batch.begin();
+		ui.draw(batch);
+		map.draw(batch);
+		batch.end();
 	}
 	
 	@Override
 	public void dispose()
 	{
 		batch.dispose();
-		modelBatch.dispose();
 		player.dispose();
 		map.dispose();
 		background.dispose();
+		ui.dispose();
+		
+		modelBatch.dispose();
+		assets.dispose();
+	}
+	
+	private void loadConfigs()
+	{
+		cfgl.load("KEY_REGIONS_UI", Gdx.files.internal("data/ui/REGION_DEFS.json"));
 	}
 	
 	@Override
@@ -122,7 +158,11 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
     public boolean keyTyped(char character) {return false;}
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {return false;}
+    public boolean touchDown(int screenX, int screenY, int pointer, int button)
+    {
+    	ui.handleInput(screenX, screenY);
+    	return true;
+    }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {return false;}
