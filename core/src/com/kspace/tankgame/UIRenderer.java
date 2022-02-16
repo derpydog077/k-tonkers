@@ -41,11 +41,11 @@ public class UIRenderer
 		generator.dispose();
 	}
 
-	public void draw(SpriteBatch batch)
+	public void draw(Player player, SpriteBatch batch)
 	{
 		batch.setProjectionMatrix(viewport.getCamera().combined);
 		
-		font.draw(batch, "sample tank", 0, 0);
+		font.draw(batch, Float.toString(Math.round(player.health)), 0, 0);
 
 		for (Object element : uiElements)
 		{
@@ -79,7 +79,7 @@ public class UIRenderer
 		if (!Float.isNaN(viewport.unproject(new Vector2(1, 1)).x))
 		{
 			String name = "editorButton";
-			uiElements.add(new UIButton(getRegionFromConfig(name, regionDefs), (int) viewport.unproject(new Vector2(0, 420)).x, (int) viewport.unproject(new Vector2(0, 420)).y, regionDefs.get(name).get("scale").asFloat()));
+			//uiElements.add(new UIButton(getRegionFromConfig(name, regionDefs), (int) viewport.unproject(new Vector2(0, 420)).x, (int) viewport.unproject(new Vector2(0, 420)).y, regionDefs.get(name).get("scale").asFloat()));
 			return true;
 		}
 		else return false;

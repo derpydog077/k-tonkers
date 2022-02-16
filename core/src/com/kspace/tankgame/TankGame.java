@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -18,16 +19,15 @@ import com.badlogic.gdx.utils.Array;
 
 public class TankGame extends ApplicationAdapter implements InputProcessor
 {
-	private Array<Entity> entities = new Array<Entity>();
-	
 	private SpriteBatch batch;
 	private Environment environment;
 	private ModelBatch modelBatch;
 	private Minimap map;
 	private OrthographicCamera camera;
 	private Player player;
+	private Player enemy;
 	private ConfigLoader cfgl;
-	private Background background;
+	private Map background;
 	private AssetManager assets;
 	private UIRenderer ui;
 	private Viewport uiViewport;
@@ -51,32 +51,31 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		assets.load("data/player/turret.g3db", Model.class);
 		assets.load("data/weapons/cannon/mdl_s0.g3db", Model.class);
 		assets.load("data/weapons/cannon/prj_s0.g3db", Model.class);
-		assets.load("data/player/npc/test_enemy.g3dj", Model.class);
 		assets.finishLoading();
-		
+		//DefaultShader.defaultCullFace = 0;
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 		modelBatch = new ModelBatch();
 		environment = new Environment();
 		batch = new SpriteBatch();
 		
 		ui = new UIRenderer(uiViewport, cfgl.get("KEY_REGIONS_UI"));
-		player = new Player(assets);
-		background = new Background(8, 8);
+		player = new Player(assets, new Color(0.5f, 0.8f, 0.2f, 1f));
+		enemy = new Player(assets, new Color(1f, 0f, 0f, 1f));
+		enemy.position.y = 100;
+		background = new Map(8, 8);
 		map = new Minimap(uiViewport, background, player);
 		
 		background.renderRadius = 2;
 		
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
 		
-		camera.position.set(player.position, 20);
+		camera.position.set(player.position, 96);
 		
 		camera.zoom = 1f;
 		camera.near = 0.1f;
 		camera.far = 100f;
 				
 		Gdx.input.setInputProcessor(this);
-		
-		entities.add(new Entity(assets));
 	}
 
 	@Override
@@ -103,13 +102,28 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) drot -= 128;
 		
 		if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) player.fire(0);
-		if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) player.fire(1);
 		
-		player.move(dpos);
 		player.direction += drot * Gdx.graphics.getDeltaTime();
+		player.move(background, dpos);
+		
+		//enemy.direction = (float) Math.toDegrees(Math.atan2(enemy.position.x - player.position.x, enemy.position.y - player.position.y));
+		//enemy.move(background, 128);
 		
 		player.rotation = (float) Math.toDegrees(Math.atan2(Gdx.input.getX() - Gdx.graphics.getWidth() / 2, Gdx.input.getY() - Gdx.graphics.getHeight() / 2));
-
+		if (enemy != null) enemy.rotation = (float) -Math.toDegrees(Math.atan2(enemy.position.x - player.position.x, enemy.position.y - player.position.y));
+		
+		if (Math.random() <= 0.02f)
+		{
+			enemy.fire(0);
+		}
+		
+		player.checkIfHit(enemy.getProjectiles());
+		if (enemy != null) enemy.checkIfHit(player.getProjectiles());
+		
+		if (enemy.health <= 0) enemy = null;
+		
+		if (player.health <= 0) Gdx.app.exit();
+		
 		batch.setProjectionMatrix(camera.combined);
 		
 		batch.begin();
@@ -118,14 +132,11 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 		
 		modelBatch.begin(camera);
 		player.render(modelBatch, environment);
-		for (Entity entity : entities)
-		{
-			entity.render(modelBatch, environment);
-		}
+		if (enemy != null) enemy.render(modelBatch, environment);
 		modelBatch.end();
 		
 		batch.begin();
-		ui.draw(batch);
+		ui.draw(player, batch);
 		map.draw(batch);
 		batch.end();
 	}

@@ -10,23 +10,29 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 
 public class Player
 {
 	public Sprite sprite;
 	public Sprite turret;
-	public Color color = new Color(0.5f, 0.8f, 0f, 1f);
+	public BoundingBox hitbox = new BoundingBox();
+	public Color color;
 	public Vector2 position = new Vector2();
 	public float rotation;
 	public float direction = 0;
-	public Array<Array<Weapon>> weapons = new Array<Array<Weapon>>();
 	public float velocity = 0;
+	public float health = 100;
+	public Array<Array<Weapon>> weapons = new Array<Array<Weapon>>();
 	public Array<ModelInstance> renderQueue = new Array<ModelInstance>();
 	public Array<ModelInstance> modelInstances = new Array<ModelInstance>();
 	
-	Player(AssetManager amgr)
+	Player(AssetManager amgr, Color color)
 	{	
+		this.color = color;
+		
 		Model tank = amgr.get("data/player/tank.g3db", Model.class);
 		Model turret = amgr.get("data/player/turret.g3db", Model.class);
 		Model cannon = amgr.get("data/weapons/cannon/mdl_s0.g3db", Model.class);
@@ -42,34 +48,34 @@ public class Player
 		turret_i.transform.rotate(1, 0, 0, 90);
 		modelInstances.add(turret_i);
 		
-		Array<Weapon> firegroupLeft = new Array<Weapon>();
-		Array<Weapon> firegroupRight = new Array<Weapon>();
-			
+		Array<Weapon> firegroup0 = new Array<Weapon>();
+		
 		Weapon w1 = new Weapon(this, cannon, proj);
 		w1.offset = 30;
-		w1.direction = -30;
+		w1.direction = 0;
 		w1.rotation = -w1.direction;
 		w1.muzzle = 256;
 		w1.reload = 0.2f;
 		w1.length = 64;
-		firegroupLeft.add(w1);
+		firegroup0.add(w1);
 		
-		Weapon w2 = new Weapon(this, cannon, proj);
+		/*Weapon w2 = new Weapon(this, cannon, proj);
 		w2.offset = 30;
 		w2.direction = 30;
 		w2.rotation = -w2.direction;
 		w2.muzzle = 256;
 		w2.reload = 0.2f;
 		w2.length = 64;
-		firegroupRight.add(w2);
+		firegroupRight.add(w2);*/
 		
-		weapons.add(firegroupLeft);
-		weapons.add(firegroupRight);
+		weapons.add(firegroup0);
 	}
 
 	public void render(ModelBatch batch, Environment environment)
 	{
-		renderQueue.clear();
+		modelInstances.get(1).calculateBoundingBox(hitbox);		
+		hitbox.set(hitbox.min.add(position.x, 0, position.y), hitbox.max.add(position.x, 0, position.y));
+		
 		
 		modelInstances.get(0).transform.setToRotation(0, 0, 1, direction);
 		modelInstances.get(0).transform.rotate(1, 0, 0, 90);
@@ -83,9 +89,9 @@ public class Player
 				weapons.get(i).get(w).update();
 				renderQueue.add(weapons.get(i).get(w).instance);
 				
-				for (int a = 0; a < weapons.get(i).get(w).active.size; a++)
+				for (int a = 0; a < weapons.get(i).get(w).projectiles.size; a++)
 				{
-					renderQueue.add(weapons.get(i).get(w).active.get(a).instance);
+					renderQueue.add(weapons.get(i).get(w).projectiles.get(a).instance);
 				}
 			}
 		}
@@ -96,9 +102,45 @@ public class Player
 		renderQueue.add(modelInstances.get(1));
 		
 		batch.render(renderQueue, environment);
+	
+		renderQueue.clear();
 	}
 	
-	public void move(float target)
+	public void checkIfHit(Array<Projectile> projectiles)
+	{
+		for (Projectile p : projectiles)
+		{
+			if (getImpact(p.position))
+			{
+				p.parent.despawn(p);
+				health -= 1;
+			}
+		}
+	}
+	
+	public boolean getImpact(Vector2 loc)
+	{
+		return hitbox.contains(new Vector3(loc.x, 0, loc.y));
+	}
+	
+	public Array<Projectile> getProjectiles()
+	{
+		Array<Projectile> projectiles = new Array<Projectile>();
+				
+		for (Array<Weapon> a : weapons)
+		{
+			for (Weapon w : a)
+			{
+				for (Projectile p : w.projectiles)
+				{
+					projectiles.add(p);
+				}
+			}
+		}
+		return projectiles;
+	}
+	
+	public void move(Map map, float target)
 	{
 		if ((velocity < target + 0.1) && (velocity > target - 0.1)) velocity = target;
 		else if (Math.round(target) == 0.0f) velocity += (target - velocity) / 10;
@@ -107,8 +149,13 @@ public class Player
 		float x = (float) Math.cos(Math.toRadians(direction + 90)) * velocity * Gdx.graphics.getDeltaTime();
 		float y = (float) Math.sin(Math.toRadians(direction + 90)) * velocity * Gdx.graphics.getDeltaTime();
 		
-		position.x += x;
-		position.y += y;
+		if (map.mapBox.contains(position.x + x, position.y + y))
+		{
+			position.x += x;
+			position.y += y;
+		}
+		
+		//System.out.println(hitbox.contains(position.x, position.y));
 	}
 	
 	public void fire(int firegroup) //true = primary, false = secondary

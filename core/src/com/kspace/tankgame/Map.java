@@ -4,14 +4,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
-public class Background
+public class Map
 {
 	public Array<Sprite> tiles = new Array<Sprite>(); //Texture Sprite
 	public Vector2 position;
+	public Rectangle mapBox;
 	public int sizeX;
 	public int sizeY;
 	public int mapWidth;
@@ -20,7 +22,7 @@ public class Background
 	public int tileY;
 	public int renderRadius;
 
-	Background(int sizeX, int sizeY)
+	Map(int sizeX, int sizeY)
 	{
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
@@ -30,6 +32,8 @@ public class Background
 		tileY = texture.getHeight();
 		mapWidth = sizeX * tileX;
 		mapHeight = sizeY * tileY;
+		
+		mapBox = new Rectangle(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight);
 		
 		for (int y = 0; y < sizeY; y++)
 		{

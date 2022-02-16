@@ -16,13 +16,13 @@ public class Minimap
 	public Sprite bg;
 	public Sprite ico;
 	public Player player;
-	public Background grid;
+	public Map grid;
 	public BitmapFont font;
 	public Viewport viewport;
 	
 	private int borderThickness = 3;
 	
-	Minimap(Viewport viewport, Background grid, Player player)
+	Minimap(Viewport viewport, Map grid, Player player)
 	{
 		this.viewport = viewport;
 		this.grid = grid;

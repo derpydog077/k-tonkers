@@ -19,7 +19,7 @@ public class Weapon
 	public Model proj;
 	public Vector2 position = new Vector2();
 	public ModelInstance instance;
-	public Array<Projectile> active = new Array<Projectile>();
+	public Array<Projectile> projectiles = new Array<Projectile>();
 
 	Weapon(Player parent, Model mdl, Model prj)
 	{
@@ -44,9 +44,9 @@ public class Weapon
 		instance.transform.setToRotation(0, 0, 1, parent.rotation + direction + rotation);
 		instance.transform.setTranslation(position.x, position.y, 1);
 		
-		for (int i = 0; i < active.size; i++)
+		for (Projectile projectile : projectiles)
 		{
-			active.get(i).update();
+			projectile.update();
 		}
 	}
 	
@@ -54,26 +54,30 @@ public class Weapon
 	{
 		if (timer == 0)
 		{
-			Projectile p = new ProjectileKinetic(this, proj, parent.rotation + direction + rotation, muzzle);
-			active.add(p);
+			float rot = parent.rotation + direction + rotation;
+			float sx = (float) Math.cos(Math.toRadians(rot + 90)) * -length;
+			float sy = (float) Math.sin(Math.toRadians(rot + 90)) * -length;
+			Vector2 pos = new Vector2(this.position.x + sx, this.position.y + sy);
+			Projectile p = new ProjectileKinetic(this, pos, parent.color, proj, rot, muzzle);
+			projectiles.add(p);
 			timer = reload;
 		}
 	}
 	
 	public void despawn(Projectile p)
 	{
-		int i = active.indexOf(p, false);
-		active.set(i, null);
-		active.removeIndex(i);
+		int i = projectiles.indexOf(p, false);
+		projectiles.set(i, null);
+		projectiles.removeIndex(i);
 	}
 	
 	public void dispose()
 	{
 		//instance.model.dispose();
 		
-		for (int i = 0; i < active.size; i++)
+		for (int i = 0; i < projectiles.size; i++)
 		{
-			active.get(i).dispose();
+			projectiles.get(i).dispose();
 		}
 	}
 }
