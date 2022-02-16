@@ -117,7 +117,7 @@ public class TankGame extends ApplicationAdapter implements InputProcessor
 			enemy.fire(0);
 		}
 		
-		player.checkIfHit(enemy.getProjectiles());
+		if (enemy != null) player.checkIfHit(enemy.getProjectiles());
 		if (enemy != null) enemy.checkIfHit(player.getProjectiles());
 		
 		if (enemy.health <= 0) enemy = null;
